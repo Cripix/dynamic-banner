@@ -42,7 +42,7 @@
                 return new Client();
             }
             catch (\Exception $e) {
-                echo "[TEAMSPEAK] {$e->getMessage()}";
+                throw new \Exception("[TEAMSPEAK] {$e->getMessage()}");
             }
         }
 
@@ -52,6 +52,11 @@
          */
         public static function server()
         {
-            return new Server();
+            try {
+                return new Server();
+            }
+            catch (\Exception $e) {
+                throw new \Exception("[TEAMSPEAK] {$e->getMessage()}");
+            }
         }
     }
