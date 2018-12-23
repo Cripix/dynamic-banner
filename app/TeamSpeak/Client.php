@@ -1,10 +1,4 @@
 <?php
-    /**
-     * Created by PhpStorm.
-     * User: Can
-     * Date: 23.12.2018
-     * Time: 04:54
-     */
 
     namespace Tivet\Banner\TeamSpeak;
 
