@@ -1,4 +1,9 @@
 {
+   "name": "tivet/dynamic-banner",
+   "type": "project",
+   "description": "Tivet - Teamspeak 3 Dynamic Banner",
+   "license": "MIT",
+
    "require"  : {
       "planetteamspeak/ts3-php-framework" : "^1.1",
       "dflydev/dot-access-data"           : "^2.0",
@@ -14,5 +19,7 @@
       "files" : [
          "helpers.php"
       ]
-   }
+   },
+   "minimum-stability": "dev",
+   "prefer-stable": true
 }
