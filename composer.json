@@ -1,0 +1,18 @@
+{
+   "require"  : {
+      "planetteamspeak/ts3-php-framework" : "^1.1",
+      "dflydev/dot-access-data"           : "^2.0",
+      "symfony/cache"                     : "^4.2",
+      "joseluisq/gimage"                  : "^3.0",
+      "lefuturiste/iptator"               : "^1.1",
+      "vectorface/whip"                   : "^0.3.2"
+   },
+   "autoload" : {
+      "psr-4" : {
+         "Tivet\\Banner\\" : "app"
+      },
+      "files" : [
+         "helpers.php"
+      ]
+   }
+}
