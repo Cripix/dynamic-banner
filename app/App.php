@@ -2,105 +2,67 @@
 
     namespace Tivet\Banner;
 
-    use GImage\Canvas;
-    use GImage\Text;
-    use GImage\Image;
-    use Tivet\Banner\Utils\Text as TextUtil;
+    use Intervention\Image\Gd\Font;
+    use Intervention\Image\ImageManager;
+    use Tivet\Banner\Utils\Text as Text;
 
     class App
     {
-        /**
-         * @return Image
-         * @throws \Exception
-         */
+        public function __construct()
+        {
+            echo $this->init();
+        }
+
+
         public function init()
         {
-            if (Cache::has("image." . Request::getValidIpAddress())) {
-                return $this->responseCached();
+            if (conf('banner.cache') === true) {
+                if (Cache::has("image." . Request::getValidIpAddress())) {
+                    return $this->responseCached();
+                }
             }
 
             $template = new Template(conf('banner.template'));
 
-            $background = new Image();
-            $background->load($template->getBackgroundLocation())->toPNG();
+            $manager = new ImageManager(['driver' => conf('image.driver')]);
 
-            $canvas = new Canvas($background);
+            $background = $manager->make($template->getBackgroundLocation());
 
             foreach ($template->getConfig() as $templateConfigKey => $temlateConfigValue) {
                 if ($templateConfigKey === 'text') {
 
                     foreach ($temlateConfigValue as $templateConfigText) {
-                        $text = new Text();
 
-                        foreach ($templateConfigText as $textItemKey => $textItemKeyValue) {
+                        $background->text($templateConfigText['value'], $templateConfigText['x'], $templateConfigText['y'], function ($font) use ($templateConfigText) {
+                            /** @var $font Font */
 
-                            if (!empty($textItemKeyValue)) {
-
-                                if ($textItemKey === 'value') {
-                                    call_user_func_array([$text, 'setContent'], [TextUtil::properText($textItemKeyValue)]);
-                                }
-
-                                if ($textItemKey === 'size') {
-                                    call_user_func_array([$text, 'setSize'], [$textItemKeyValue]);
-                                }
-
-                                if ($textItemKey === 'font') {
-                                    call_user_func_array([$text, 'setFontface'], [$textItemKeyValue]);
-                                }
-
-                                if ($textItemKey === 'color') {
-                                    call_user_func_array([$text, 'setColor'], TextUtil::hex2rgb($textItemKeyValue));
-                                }
-
-                                if ($textItemKey === 'opacity') {
-                                    call_user_func_array([$text, 'setOpacity'], [$textItemKeyValue]);
-                                }
-                                if ($textItemKey === 'align') {
-                                    call_user_func_array([$text, 'setAlign'], [$textItemKeyValue]);
-                                }
-
-                                if ($textItemKey === 'valign') {
-                                    call_user_func_array([$text, 'setValign'], [$textItemKeyValue]);
-                                }
-
-                                if ($textItemKey === 'width') {
-                                    call_user_func_array([$text, 'setWidth'], [$textItemKeyValue]);
-                                }
-                                if ($textItemKey === 'height') {
-                                    call_user_func_array([$text, 'setHeight'], [$textItemKeyValue]);
-                                }
-                                if ($textItemKey === 'line_height') {
-                                    call_user_func_array([$text, 'setLineHeight'], [$textItemKeyValue]);
-                                }
-                                if ($textItemKey === 'x') {
-                                    call_user_func_array([$text, 'setLeft'], [$textItemKeyValue]);
-                                }
-
-                                if ($textItemKey === 'y') {
-                                    call_user_func_array([$text, 'setTop'], [$textItemKeyValue]);
-                                }
-                            }
-                        }
-
-                        $canvas->append([$text]);
+                            $font->file($templateConfigText['font'] ?? null);
+                            $font->color(array_merge(Text::hex2rgb($templateConfigText['color']), [$templateConfigText['opacity'] ?? 1]) ?? '#FFFFFF');
+                            $font->size($templateConfigText['size'] ?? null);
+                            $font->align($templateConfigText['align'] ?? 'left');
+                            $font->valign($templateConfigText['valign'] ?? 'top');
+                        });
                     }
                 }
             }
 
-            $canvas->draw()->toPNG();
-
             ob_start();
-            $canvas->output();
+            echo $background->response('jpg', 100);
             $cacheData = ob_get_contents();
             ob_end_clean();
 
-            echo $cacheData;
             Cache::set("image." . Request::getValidIpAddress(), $cacheData);
+
+            return $cacheData;
         }
 
 
         public function responseCached()
         {
-            return (new Image())->load(Cache::get("image." . Request::getValidIpAddress()))->output();
+            $manager = new ImageManager(['driver' => conf('image.driver')]);
+
+            $background = $manager->make(Cache::get("image." . Request::getValidIpAddress()));
+
+            return $background->response('jpg', 100);
         }
     }
